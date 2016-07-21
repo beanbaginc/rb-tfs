@@ -1,0 +1,72 @@
+<project name="rb-tfs" default="compile"
+         xmlns:ivy="antlib:org.apache.ivy.ant">
+    <target name="resolve">
+        <ivy:retrieve />
+    </target>
+
+    <target name="compile" depends="resolve">
+        <mkdir dir="build" />
+        <mkdir dir="build/classes" />
+
+        <ivy:cachepath pathid="lib" />
+
+       <copy todir="build/lib">
+           <fileset dir="lib" includes="*/**" />
+       </copy>
+
+        <path id="build.classpath">
+            <fileset dir="build/lib" includes="*.jar" />
+        </path>
+        <manifestclasspath property="jar.classpath" jarfile="build/rb-tfs.jar">
+            <classpath refid="build.classpath" />
+        </manifestclasspath>
+
+        <javac srcdir="."
+               destdir="build/classes"
+               includeantruntime="false"
+               classpathref="build.classpath"
+               debug="true"
+               encoding="utf-8" >
+            <compilerarg value="-Xlint:deprecation" />
+       </javac>
+
+       <jar destfile="build/rb-tfs.jar">
+           <fileset dir="build/classes" />
+           <file name="log4j.properties" />
+
+           <manifest>
+                <attribute name="Main-Class" value="org.reviewboard.tfs.Application" />
+                <attribute name="Class-Path" value="${jar.classpath}" />
+           </manifest>
+       </jar>
+    </target>
+
+    <target name="dist" depends="compile">
+        <mkdir dir="dist" />
+
+        <zip destfile="dist/rb-tfs.zip">
+            <fileset dir="build" includes="rb-tfs.jar" />
+            <fileset dir="." includes="lib/**/*" />
+        </zip>
+
+        <echo>Signing zip archive</echo>
+        <exec dir="dist" executable="gpg" failonerror="true">
+            <arg value="--batch" />
+            <arg value="--yes" />
+            <arg value="-u" />
+            <arg value="4ED1F993" />
+            <arg value="--armor" />
+            <arg value="--output" />
+            <arg value="rb-tfs.zip.asc" />
+            <arg value="--detach-sig" />
+            <arg value="rb-tfs.zip" />
+        </exec>
+
+        <echo>Creating sha256 sum</echo>
+        <exec dir="dist" executable="shasum" output="dist/rb-tfs.zip.sha256sum" failonerror="true">
+            <arg value="-a" />
+            <arg value="256" />
+            <arg value="rb-tfs.zip" />
+        </exec>
+    </target>
+</project>

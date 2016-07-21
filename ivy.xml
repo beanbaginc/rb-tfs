@@ -1,0 +1,11 @@
+<ivy-module version="2.0">
+    <info organisation="org.reviewboard" module="rb-tfs" />
+    <dependencies>
+        <!--
+        We additionally use commons-io and commons-logging, but those are
+        bundled within the TFS SDK jar.
+        -->
+        <dependency org="commons-cli" name="commons-cli" rev="1.3.1" />
+        <dependency org="com.microsoft" name="com.microsoft.tfs.sdk" rev="14.0.3" />
+    </dependencies>
+</ivy-module>
