@@ -188,16 +188,18 @@ public class TFSDiffer {
                 oldFile.getAbsolutePath(), newFile.getAbsolutePath()
             });
 
-            try {
+            try(final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                IOUtils.copy(p.getInputStream(), output);
+                final String  error = IOUtils.toString(p.getErrorStream(), utf8);
                 final int retcode = p.waitFor();
 
                 if (retcode == 0 || retcode == 1) {
-                    IOUtils.copy(p.getInputStream(), diff);
+                    IOUtils.write(output.toByteArray(), diff);
                 } else {
                     final String diffError = IOUtils.toString(p.getErrorStream(), utf8);
-                    throw new DiffException("diff command failed with output:\n" + diffError);
+                    throw new DiffException("diff command failed with output:\n" + error);
                 }
-            } catch (InterruptedException e) {
+            } catch (InterruptedException|IOException e) {
                 throw new DiffException("diff command failed: " + e.getMessage());
             }
         }
