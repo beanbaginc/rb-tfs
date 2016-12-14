@@ -8,9 +8,10 @@ import java.nio.charset.Charset;
 import com.microsoft.tfs.core.clients.versioncontrol.VersionControlClient;
 import com.microsoft.tfs.core.clients.versioncontrol.VersionControlConstants;
 import com.microsoft.tfs.util.temp.TempStorageService;
-import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.PendingSet;
-import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.PendingChange;
 import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.ChangeType;
+import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.ItemType;
+import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.PendingChange;
+import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.PendingSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.io.FileUtils;
@@ -103,19 +104,9 @@ public class TFSDiffer {
                                          final VersionControlClient versionControl,
                                          final ByteArrayOutputStream diff)
                                          throws DiffException, IOException {
-        final TempStorageService tempStorage = TempStorageService.getInstance();
         final String serverItem = change.getServerItem();
         final ChangeType changeType = change.getChangeType();
-
-        final boolean isBinary = change.getEncoding() == VersionControlConstants.ENCODING_BINARY;
-
-        File oldFile;
-        String oldVersion = new Integer(change.getVersion()).toString();
-        String oldFilename = change.getServerItem();
-        File newFile;
-        String newVersion = "(pending)";
-        String newFilename = oldFilename;
-
+        final ItemType itemType = change.getItemType();
         final ChangeType availableTypes = ChangeType.combine(new ChangeType[]{
             ChangeType.ADD,
             ChangeType.BRANCH,
@@ -125,10 +116,19 @@ public class TFSDiffer {
             ChangeType.UNDELETE
         });
 
-        if (!changeType.containsAny(availableTypes)) {
-            log.info("Skipping " + changeType.toUIString(false) + " of " + serverItem);
+        if (itemType != ItemType.FILE || !changeType.containsAny(availableTypes)) {
+            log.info("Skipping " + changeType.toUIString(false) + " of " + serverItem + " (" + itemType.toUIString() + ")");
             return;
         }
+
+        final TempStorageService tempStorage = TempStorageService.getInstance();
+        final boolean isBinary = change.getEncoding() == VersionControlConstants.ENCODING_BINARY;
+        File oldFile;
+        String oldVersion = new Integer(change.getVersion()).toString();
+        String oldFilename = change.getServerItem();
+        File newFile;
+        String newVersion = "(pending)";
+        String newFilename = oldFilename;
 
         if (change.isRename()) {
             oldFilename = change.getSourceServerItem();
