@@ -130,7 +130,7 @@ public class TFSDiffer {
         String newVersion = "(pending)";
         String newFilename = oldFilename;
 
-        if (change.isRename()) {
+        if (change.isRename() || change.isBranch()) {
             oldFilename = change.getSourceServerItem();
             oldVersion = new Integer(change.getSourceVersionFrom()).toString();
         }
