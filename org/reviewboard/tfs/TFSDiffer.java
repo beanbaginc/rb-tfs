@@ -7,15 +7,16 @@ import java.nio.charset.Charset;
 
 import com.microsoft.tfs.core.clients.versioncontrol.VersionControlClient;
 import com.microsoft.tfs.core.clients.versioncontrol.VersionControlConstants;
-import com.microsoft.tfs.util.temp.TempStorageService;
+import com.microsoft.tfs.core.clients.versioncontrol.exceptions.VersionControlException;
 import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.ChangeType;
 import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.ItemType;
 import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.PendingChange;
 import com.microsoft.tfs.core.clients.versioncontrol.soapextensions.PendingSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.microsoft.tfs.util.temp.TempStorageService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -83,7 +84,7 @@ public class TFSDiffer {
             }
 
             result.diff = diffStream.toByteArray();
-        } catch (final DiffException|IOException e) {
+        } catch (final DiffException|IOException|VersionControlException e) {
             result.err = e.getMessage();
             result.success = false;
         }
